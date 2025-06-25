@@ -23,6 +23,34 @@ import { AddTaskDialog } from "@/components/add-task-dialog"
 import { AddMilestoneDialog } from "@/components/add-milestone-dialog"
 import { AddInvoiceDialog } from "@/components/add-invoice-dialog"
 
+import { useRouter } from 'next/navigation'
+import { supabase } from '@/lib/src_lib_supabaseClient'
+
+// ...inside your component:
+const router = useRouter();
+
+const handleEdit = (project) => {
+  // Open a dialog/modal pre-filled with project data
+  // On submit, call Supabase update (see below)
+};
+
+const handleDelete = async (projectId: string) => {
+  if (!confirm('Are you sure you want to delete this project?')) return;
+  const { error } = await supabase.from('projects').delete().eq('id', projectId);
+  if (!error) {
+    // Optionally navigate away or refresh project list
+    router.push('/projects');
+  } else {
+    alert('Failed to delete project');
+  }
+};
+
+const handleShare = (projectId: string) => {
+  const url = `${window.location.origin}/projects/${projectId}`;
+  navigator.clipboard.writeText(url);
+  alert('Project link copied!');
+};
+
 // Mock data for the project
 const project = {
   id: 1,
@@ -423,6 +451,16 @@ export default function ProjectDetail({ params }: { params: { id: string } }) {
         </Tabs>
       </div>
 
+<Button variant="ghost" size="sm" onClick={() => handleEdit(project)}>
+  <Edit className="h-4 w-4" />
+</Button>
+<Button variant="ghost" size="sm" onClick={() => handleDelete(project.id)}>
+  <Trash2 className="h-4 w-4" />
+</Button>
+<Button variant="ghost" size="sm" onClick={() => handleShare(project.id)}>
+  <Share2 className="h-4 w-4" />
+</Button>
+      
       {/* Dialog Components */}
       <AddExpenseDialog open={showAddExpense} onOpenChange={setShowAddExpense} />
       <AddTaskDialog open={showAddTask} onOpenChange={setShowAddTask} />
