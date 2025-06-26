@@ -1,7 +1,7 @@
 "use client"
 
-import type React from "react"
-
+import React, { useState } from "react"
+import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
@@ -21,9 +21,33 @@ interface AddClientDialogProps {
 }
 
 export function AddClientDialog({ open, onOpenChange }: AddClientDialogProps) {
-  const handleSubmit = (e: React.FormEvent) => {
+  // State for form fields
+  const [clientName, setClientName] = useState('')
+  const [email, setEmail] = useState('')
+  const [phone, setPhone] = useState('')
+  const [address, setAddress] = useState('')
+  const [notes, setNotes] = useState('')
+
+  const router = useRouter()
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    onOpenChange(false)
+
+    // Send POST request to backend
+    const response = await fetch('/api/clients', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: clientName, email, phone, address, notes }),
+    })
+
+    if (response.ok) {
+      const newClient = await response.json()
+      onOpenChange(false)
+      // Redirect to the new client's page
+      router.push(`/clients/${newClient.id}`)
+    } else {
+      alert("Failed to add client!")
+    }
   }
 
   return (
@@ -36,28 +60,57 @@ export function AddClientDialog({ open, onOpenChange }: AddClientDialogProps) {
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="clientName">Client Name</Label>
-            <Input id="clientName" placeholder="Johnson Family" required />
+            <Input
+              id="clientName"
+              placeholder="Johnson Family"
+              required
+              value={clientName}
+              onChange={e => setClientName(e.target.value)}
+            />
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
-              <Input id="email" type="email" placeholder="client@email.com" required />
+              <Input
+                id="email"
+                type="email"
+                placeholder="client@email.com"
+                required
+                value={email}
+                onChange={e => setEmail(e.target.value)}
+              />
             </div>
             <div className="space-y-2">
               <Label htmlFor="phone">Phone</Label>
-              <Input id="phone" placeholder="(555) 123-4567" required />
+              <Input
+                id="phone"
+                placeholder="(555) 123-4567"
+                required
+                value={phone}
+                onChange={e => setPhone(e.target.value)}
+              />
             </div>
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="address">Address</Label>
-            <Textarea id="address" placeholder="123 Main Street, City, State 12345" />
+            <Textarea
+              id="address"
+              placeholder="123 Main Street, City, State 12345"
+              value={address}
+              onChange={e => setAddress(e.target.value)}
+            />
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="notes">Notes</Label>
-            <Textarea id="notes" placeholder="Additional notes about the client..." />
+            <Textarea
+              id="notes"
+              placeholder="Additional notes about the client..."
+              value={notes}
+              onChange={e => setNotes(e.target.value)}
+            />
           </div>
 
           <DialogFooter>
